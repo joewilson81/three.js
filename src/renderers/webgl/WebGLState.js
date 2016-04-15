@@ -621,13 +621,14 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 			if ( ! _this.canvas ) {
 				// Cache the canvas so we don't have to recreate it for each frame
 				_this.canvas = document.createElement("canvas");
+				_this.canvasRenderingContext = _this.canvas.getContext("2d");
 			}
 
 			function videoToCanvas(resource, width, height) {
 				_this.canvas.width = width;
 				_this.canvas.height = height;
-				var draw = _this.canvas.getContext("2d");
-				draw.drawImage(resource, 0, 0, width, height);
+
+				_this.canvasRenderingContext.drawImage(resource, 0, 0, width, height);
 				return _this.canvas;
 			}
 
