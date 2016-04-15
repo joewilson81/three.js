@@ -31200,7 +31200,7 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 			}
 
 			if ( arguments.length == 6 && arguments[5] instanceof HTMLVideoElement) {
-				arguments[5] = videoToCanvas(arguments[5], arguments[5].width, arguments[5].height);
+				arguments[5] = videoToCanvas(arguments[5], arguments[5].videoWidth, arguments[5].videoHeight);
 			}
 		}
 
