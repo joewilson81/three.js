@@ -616,7 +616,7 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 		// The WebGL implementation in IE11 does not support passing an
 		// HTMLVideoElement to texImage2D. Instead, we convert the frame
 		// to a canvas texture.
-		// See the workaround posted at https://connect.microsoft.com/IE/feedbackdetail/view/941984/webgl-video-upload-to-texture-not-supported#tabs
+		// Credit to Matthew Galloway (pivoter1) for his workaround on https://connect.microsoft.com/IE/feedbackdetail/view/941984/webgl-video-upload-to-texture-not-supported
 		if ( userAgentIE11 ) {
 			if ( ! _this.canvas ) {
 				// Cache the canvas so we don't have to recreate it for each frame
