@@ -30628,8 +30628,6 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 	var currentScissor = new THREE.Vector4();
 	var currentViewport = new THREE.Vector4();
 
-	var userAgentIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-
 	this.init = function () {
 
 		this.clearColor( 0, 0, 0, 1 );
@@ -31181,30 +31179,6 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 
 	this.texImage2D = function () {
 
-		// The WebGL implementation in IE11 does not support passing an
-		// HTMLVideoElement to texImage2D. Instead, we convert the frame
-		// to a canvas texture.
-		// Credit to Matthew Galloway (pivoter1) for his workaround on https://connect.microsoft.com/IE/feedbackdetail/view/941984/webgl-video-upload-to-texture-not-supported
-		if ( userAgentIE11 ) {
-			if ( ! _this.canvas ) {
-				// Cache the canvas so we don't have to recreate it for each frame
-				_this.canvas = document.createElement("canvas");
-				_this.canvasRenderingContext = _this.canvas.getContext("2d");
-			}
-
-			function videoToCanvas(resource, width, height) {
-				_this.canvas.width = width;
-				_this.canvas.height = height;
-
-				_this.canvasRenderingContext.drawImage(resource, 0, 0, width, height);
-				return _this.canvas;
-			}
-
-			if ( arguments.length == 6 && arguments[5] instanceof HTMLVideoElement) {
-				arguments[5] = videoToCanvas(arguments[5], arguments[5].videoWidth, arguments[5].videoHeight);
-			}
-		}
-
 		try {
 
 			gl.texImage2D.apply( gl, arguments );
@@ -31216,6 +31190,49 @@ THREE.WebGLState = function ( gl, extensions, paramThreeToGL ) {
 		}
 
 	};
+
+	// The WebGL implementation in IE11 does not support passing an
+	// HTMLVideoElement to texImage2D. Instead, we convert the frame
+	// to a canvas texture.
+	// Credit to Matthew Galloway (pivoter1) for his workaround on https://connect.microsoft.com/IE/feedbackdetail/view/941984/webgl-video-upload-to-texture-not-supported
+	if ( !!window.MSInputMethodContext && !!document.documentMode ) {
+		(function() {
+			// Decorators
+			function override(object, methodName, callback) {
+				object[methodName] = callback(object[methodName])
+			}
+
+			function before(extraBehavior) {
+				return function(original) {
+					return function() {
+						var args = extraBehavior.apply(this, arguments)
+						return original.apply(this, args)
+					}
+				}
+			}
+
+			// Cache the canvas so we don't have to recreate it for each frame
+			_this.canvas = document.createElement("canvas");
+			_this.canvasRenderingContext = _this.canvas.getContext("2d");
+
+			override(_this, 'texImage2D', before(function() {
+				function videoToCanvas(resource, width, height) {
+					_this.canvas.width = width;
+					_this.canvas.height = height;
+
+					_this.canvasRenderingContext.drawImage(resource, 0, 0, width, height);
+					return _this.canvas;
+				}
+
+				if ( arguments.length == 6 && arguments[5] instanceof HTMLVideoElement) {
+					arguments[5] = videoToCanvas(arguments[5], arguments[5].videoWidth, arguments[5].videoHeight);
+				}
+
+				return arguments;
+			}));
+		})();
+
+	}
 
 	// clear values
 
